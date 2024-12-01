@@ -19,7 +19,7 @@ int main() {
         int a, b;
         if (lineStream >> a >> b) {
             left.push_back(a);
-            right.push_back(b); // Store the second numbe
+            right.push_back(b);
         } else {
             std::cerr << "Invalid line format: " << line << std::endl;
             return 1;
