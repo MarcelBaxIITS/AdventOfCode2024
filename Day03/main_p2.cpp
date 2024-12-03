@@ -16,7 +16,7 @@ std::vector<std::pair<std::string, int> > findAllRegexMatches(const std::string 
     return matches;
 }
 
-std::vector<int> findAllRegexMatchesPosition(const std::string &content,
+std::vector<int> findAllRegexMatchPositions(const std::string &content,
                                                     const std::string &regex) {
     std::regex regexPattern(regex);
     std::vector<int> matches;
@@ -73,8 +73,8 @@ int main() {
     std::string doPattern = "do\\(\\)";
 
     std::vector<std::pair<std::string, int> > matches = findAllRegexMatches(content, pattern);
-    std::vector<int> donts = findAllRegexMatchesPosition(content, dontPattern);
-    std::vector<int> dos = findAllRegexMatchesPosition(content, doPattern);
+    std::vector<int> donts = findAllRegexMatchPositions(content, dontPattern);
+    std::vector<int> dos = findAllRegexMatchPositions(content, doPattern);
     dos.insert(dos.begin(), 0);
 
     int num = 0;
