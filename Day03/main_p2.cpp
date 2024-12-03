@@ -4,42 +4,25 @@
 #include <sstream>
 #include <regex>
 
-struct Result {
-    std::string value;
-    int line;
-    int start;
-
-    Result(const std::string &strVal, int lineVal, int startVal)
-        : value(strVal), line(lineVal), start(startVal) {
-    }
-};
-
-std::vector<Result> findAllRegexMatchesAsResult(const std::vector<std::string> &lines, const std::string &regex) {
+std::vector<std::pair<std::string, int> > findAllRegexMatches(const std::string &content,
+                                                                      const std::string &regex) {
     std::regex regexPattern(regex);
-    std::vector<Result> matches;
-    int lineNo = 0;
+    std::vector<std::pair<std::string, int> > matches;
 
-    for (const std::string line: lines) {
-        for (std::sregex_iterator it(line.begin(), line.end(), regexPattern), end; it != end; ++it) {
-            matches.emplace_back((*it).str(), lineNo, (*it).position());
-        }
-        lineNo++;
+    for (std::sregex_iterator it(content.begin(), content.end(), regexPattern), end; it != end; ++it) {
+        matches.push_back(std::make_pair((*it).str(), (*it).position()));
     }
 
     return matches;
 }
 
-std::vector<std::pair<int, int> > findAllRegexMatchesAsNumberAndLine(const std::vector<std::string> &lines,
-                                                                     const std::string &regex) {
+std::vector<int> findAllRegexMatchesPosition(const std::string &content,
+                                                    const std::string &regex) {
     std::regex regexPattern(regex);
-    std::vector<std::pair<int, int> > matches;
-    int lineNo = 0;
+    std::vector<int> matches;
 
-    for (const std::string line: lines) {
-        for (std::sregex_iterator it(line.begin(), line.end(), regexPattern), end; it != end; ++it) {
-            matches.push_back(std::make_pair((*it).position(), lineNo));
-        }
-        lineNo++;
+    for (std::sregex_iterator it(content.begin(), content.end(), regexPattern), end; it != end; ++it) {
+        matches.push_back((*it).position());
     }
 
     return matches;
@@ -71,30 +54,6 @@ std::pair<int, int> processMatch(const std::string &match) {
     throw std::runtime_error("Invalid format: Expected two numbers separated by ','");
 }
 
-std::pair<int, int> findNext(const std::vector<std::pair<int, int> > &matches,
-                             int givenNumber, int givenLine) {
-    for (const auto &result: matches) {
-        if (result.second < givenLine) continue;
-
-
-        if ((result.first > givenNumber && result.second == givenLine) || (
-                result.first < givenNumber && result.second > givenLine)) {
-            return std::make_pair(result.first, result.second);
-        }
-    }
-    return std::make_pair(-1, -1);
-}
-
-
-bool shouldChangeToDont(const std::pair<int, int> &nextDont, const Result &match) {
-    return !(nextDont.first == -1 || match.line < nextDont.second || (
-                 match.line == nextDont.second && match.start < nextDont.first));
-}
-
-bool shouldChangeToDo(const std::pair<int, int> &nextDo, const Result &match) {
-    return !(nextDo.first == -1 || match.line < nextDo.second || (
-                 match.line == nextDo.second && match.start < nextDo.first));
-}
 
 int main() {
     std::ifstream inputFile("./Day03/input_02_1.txt");
@@ -103,9 +62,9 @@ int main() {
         return 1;
     }
     std::string line;
-    std::vector<std::string> lines;
+    std::string content;
     while (std::getline(inputFile, line)) {
-        lines.push_back(line);
+        content += line;
     }
 
 
@@ -113,26 +72,28 @@ int main() {
     std::string dontPattern = "don't\\(\\)";
     std::string doPattern = "do\\(\\)";
 
-    std::vector<Result> matches = findAllRegexMatchesAsResult(lines, pattern);
-    std::vector<std::pair<int, int> > donts = findAllRegexMatchesAsNumberAndLine(lines, dontPattern);
-    std::vector<std::pair<int, int> > dos = findAllRegexMatchesAsNumberAndLine(lines, doPattern);
+    std::vector<std::pair<std::string, int> > matches = findAllRegexMatches(content, pattern);
+    std::vector<int> donts = findAllRegexMatchesPosition(content, dontPattern);
+    std::vector<int> dos = findAllRegexMatchesPosition(content, doPattern);
+    dos.insert(dos.begin(), 0);
 
-    bool doDont = true;
-    std::pair<int, int> nextDont = findNext(donts, 0, 0);
-    std::pair<int, int> nextDo = findNext(dos, 0, 0);
     int num = 0;
-
-    for (const Result match: matches) {
-        if (doDont && shouldChangeToDont(nextDont, match)) {
-            doDont = false;
-            nextDo = findNext(dos, match.start, match.line);
-        } else if (!doDont && shouldChangeToDo(nextDo, match)) {
-            doDont = true;
-            nextDont = findNext(donts, match.start, match.line);
+    int doIndex = 0;
+    int dontIndex = 0;
+    int nearestSmallerDo = -1;
+    int nearestSmallerDont = -1;
+    for (const std::pair<std::string, int> match: matches) {
+        while (nearestSmallerDo < match.second && doIndex < dos.size() && dos[doIndex] < match.second) {
+            nearestSmallerDo = dos[doIndex];
+            doIndex++;
+        }
+        while (nearestSmallerDont < match.second && dontIndex < donts.size() && donts[dontIndex] < match.second) {
+            nearestSmallerDont = donts[dontIndex];
+            dontIndex++;
         }
 
-        if (doDont == true) {
-            std::pair<int, int> numbers = processMatch(match.value);
+        if (nearestSmallerDo > nearestSmallerDont) {
+            std::pair<int, int> numbers = processMatch(match.first);
             num += numbers.first * numbers.second;
         }
     }
