@@ -29,35 +29,35 @@ int main() {
                 char dR = lines[row + 1][col + 1];
 
                 int mCount = 0;
+                int sCount = 0;
+
                 if (uL == 'M') {
                     mCount++;
-                }
-                if (uR == 'M') {
-                    mCount++;
-                }
-                if (dL == 'M') {
-                    mCount++;
-                }
-                if (dR == 'M') {
-                    mCount++;
+                } else if (uL == 'S') {
+                    sCount++;
                 }
 
-                int sCount = 0;
-                if (uL == 'S') {
+                if (uR == 'M') {
+                    mCount++;
+                } else if (uR == 'S') {
                     sCount++;
                 }
-                if (uR == 'S') {
+
+                if (dL == 'M') {
+                    mCount++;
+                } else if (dL == 'S') {
                     sCount++;
                 }
-                if (dL == 'S') {
+
+                if (dR == 'M') {
+                    mCount++;
+                } else if (dR == 'S') {
                     sCount++;
                 }
-                if (dR == 'S') {
-                    sCount++;
-                }
+
                 if (sCount == 2 && mCount == 2) {
-                    if ((uL == uR) || (uL == dL) ) {
-                       count++;
+                    if ((uL == uR) || (uL == dL)) {
+                        count++;
                     }
                 }
             }
