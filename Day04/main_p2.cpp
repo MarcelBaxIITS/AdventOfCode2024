@@ -56,7 +56,7 @@ int main() {
                     sCount++;
                 }
                 if (sCount == 2 && mCount == 2) {
-                    if ((uL == uR && dL == dR) || (uL == dL && uR == dR) ) {
+                    if ((uL == uR) || (uL == dL) ) {
                        count++;
                     }
                 }
